@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curto — Encurtador de URLs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root[data-theme="dark"] {
+      --bg: #0d0d0f;
+      --surface: #18181c;
+      --border: #2a2a30;
+      --text: #f0f0f2;
+      --muted: #7a7a8a;
+      --accent: #7c6dfa;
+      --accent-hover: #6a5ce8;
+      --success: #34d399;
+      --error: #f87171;
+      --hero-from: #1a1040;
+      --hero-to: #0d0d0f;
+    }
+    :root[data-theme="light"] {
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --border: #e0e0e8;
+      --text: #111114;
+      --muted: #777788;
+      --accent: #5b4ef5;
+      --accent-hover: #4a3ee0;
+      --success: #059669;
+      --error: #dc2626;
+      --hero-from: #ede9fe;
+      --hero-to: #f5f5f7;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+    }
+    .logo span { color: var(--text); }
+    .nav-right { display: flex; gap: 0.75rem; align-items: center; }
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.4rem 1rem;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+    .btn-theme {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.2s;
+    }
+    .btn-theme:hover { border-color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(160deg, var(--hero-from), var(--hero-to));
+      padding: 4rem 2rem 3rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 0.75rem;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 420px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+
+    /* FORM */
+    .form-wrap {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.375rem;
+      transition: border-color 0.2s;
+    }
+    .input-row:focus-within { border-color: var(--accent); }
+    .input-row input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9375rem;
+      padding: 0.5rem 0.75rem;
+    }
+    .input-row input::placeholder { color: var(--muted); }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.25rem;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* RESULT */
+    .result {
+      margin-top: 1rem;
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .result.show { display: flex; }
+    .result.success { background: color-mix(in srgb, var(--success) 12%, transparent); border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); }
+    .result.error { background: color-mix(in srgb, var(--error) 12%, transparent); border: 1px solid color-mix(in srgb, var(--error) 30%, transparent); }
+    .result-link {
+      flex: 1;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.875rem;
+      color: var(--success);
+      word-break: break-all;
+    }
+    .result.error .result-link { color: var(--error); font-family: inherit; }
+    .btn-copy {
+      background: none;
+      border: 1px solid color-mix(in srgb, var(--success) 40%, transparent);
+      color: var(--success);
+      border-radius: 6px;
+      padding: 0.35rem 0.75rem;
+      font-family: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .btn-copy:hover { background: color-mix(in srgb, var(--success) 15%, transparent); }
+
+    /* HOW IT WORKS */
+    .how {
+      max-width: 600px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+    }
+    .how-title {
+      font-size: 0.75rem;
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .step {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--accent) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-text strong { display: block; font-size: 0.9rem; margin-bottom: 0.2rem; }
+    .step-text span { font-size: 0.825rem; color: var(--muted); line-height: 1.5; }
+
+    /* MODAL */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 560px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .modal-header h2 { font-size: 1rem; font-weight: 600; }
+    .btn-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 1.25rem; cursor: pointer; line-height: 1;
+    }
+    .url-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .url-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.875rem 1rem;
+    }
+    .url-item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.4rem; }
+    .url-slug {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+    .url-original {
+      font-size: 0.8rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 340px;
+    }
+    .url-meta { display: flex; gap: 1rem; align-items: center; }
+    .url-clicks {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+    .btn-del {
+      background: none;
+      border: 1px solid color-mix(in srgb, var(--error) 30%, transparent);
+      color: var(--error);
+      border-radius: 6px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s;
+    }
+    .btn-del:hover { background: color-mix(in srgb, var(--error) 12%, transparent); }
+    .empty { text-align: center; color: var(--muted); font-size: 0.875rem; padding: 2rem 0; }
+
+    @media (max-width: 480px) {
+    nav { padding: 1rem; }
+    .hero { padding: 2.5rem 1rem 2rem; }
+    .how { padding: 0 1rem; }
+    .hero h1 { font-size: 1.75rem; }
+    }
+
+    @media (max-height: 500px) {
+    .hero { padding: 1.5rem 1rem; }
+    .hero h1 { font-size: 1.5rem; }
+    .hero p { margin-bottom: 1rem; }
+    }
+
+    @media (max-width: 600px) {
+    .hero h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">curto<span>.</span></div>
+  <div class="nav-right">
+    <button class="btn-ghost" onclick="abrirModal()">Minhas URLs</button>
+    <button class="btn-theme" onclick="alternarTema()" title="Alternar tema">🌙</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <p class="hero-label">Encurtador de URLs</p>
+  <h1>Links menores, destinos maiores.</h1>
+  <p>Cole qualquer URL abaixo e receba um link curto na hora.</p>
+
+  <div class="form-wrap">
+    <div class="input-row">
+      <input type="url" id="urlInput" placeholder="https://seulink.com/muito/longo/aqui" />
+      <button class="btn-primary" id="btnEncurtar" onclick="encurtar()">Encurtar</button>
+    </div>
+    <div class="result" id="resultado">
+      <span class="result-link" id="resultLink"></span>
+      <button class="btn-copy" id="btnCopiar" onclick="copiar()">Copiar</button>
+    </div>
+  </div>
+</section>
+
+<section class="how">
+  <p class="how-title">Como funciona</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Cole sua URL</strong>
+        <span>Qualquer link longo — artigo, vídeo, produto, o que for.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Clique em Encurtar</strong>
+        <span>Um código único de 6 caracteres é gerado e salvo.</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Compartilhe</strong>
+        <span>Quem acessar o link curto é redirecionado automaticamente.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="fecharModalFora(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Minhas URLs</h2>
+      <button class="btn-close" onclick="fecharModal()">✕</button>
+    </div>
+    <div class="url-list" id="urlList"></div>
+  </div>
+</div>
+
+<script>
+  // TEMA
+  const btnTema = document.querySelector('.btn-theme')
+  function alternarTema() {
+    const html = document.documentElement
+    const atual = html.getAttribute('data-theme')
+    html.setAttribute('data-theme', atual === 'dark' ? 'light' : 'dark')
+    btnTema.textContent = atual === 'dark' ? '☀️' : '🌙'
+  }
+
+  // ENCURTAR
+  async function encurtar() {
+    const input = document.getElementById('urlInput')
+    const btn = document.getElementById('btnEncurtar')
+    const resultado = document.getElementById('resultado')
+    const resultLink = document.getElementById('resultLink')
+
+    const url = input.value.trim()
+    if (!url) return
+    const urlFinal = url.startsWith('http') ? url : 'https://' + url
+
+    btn.disabled = true
+    btn.textContent = 'Encurtando...'
+    resultado.className = 'result'
+
+    try {
+      const res = await fetch('/api/encurtar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: urlFinal })
+      })
+      const data = await res.json()
+
+      if (data.erro) throw new Error(data.erro)
+
+      resultLink.textContent = data.curta
+      resultLink.dataset.url = data.curta
+      document.getElementById('btnCopiar').textContent = 'Copiar'
+      resultado.className = 'result success show'
+    } catch (e) {
+      resultLink.textContent = e.message || 'Erro ao encurtar.'
+      resultado.className = 'result error show'
+      document.getElementById('btnCopiar').style.display = 'none'
+    } finally {
+      btn.disabled = false
+      btn.textContent = 'Encurtar'
+    }
+  }
+
+  document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') encurtar()
+  })
+
+  // COPIAR
+  function copiar() {
+    const url = document.getElementById('resultLink').dataset.url
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('btnCopiar')
+      btn.textContent = 'Copiado!'
+      setTimeout(() => btn.textContent = 'Copiar', 2000)
+    })
+  }
+
+  // MODAL
+  async function abrirModal() {
+    document.getElementById('overlay').classList.add('open')
+    await carregarURLs()
+  }
+  function fecharModal() {
+    document.getElementById('overlay').classList.remove('open')
+  }
+  function fecharModalFora(e) {
+    if (e.target === document.getElementById('overlay')) fecharModal()
+  }
+
+  async function carregarURLs() {
+    const list = document.getElementById('urlList')
+    list.innerHTML = '<p class="empty">Carregando...</p>'
+    try {
+      const res = await fetch('/api/urls')
+      const data = await res.json()
+      const slugs = Object.keys(data)
+      if (!slugs.length) {
+        list.innerHTML = '<p class="empty">Nenhuma URL encurtada ainda.</p>'
+        return
+      }
+      list.innerHTML = slugs.map(slug => {
+        const u = data[slug]
+        return `
+          <div class="url-item" id="item-${slug}">
+            <div class="url-item-top">
+              <span class="url-slug">localhost:3000/${slug}</span>
+              <button class="btn-del" onclick="deletar('${slug}')">Deletar</button>
+            </div>
+            <div class="url-original" title="${u.original}">${u.original}</div>
+            <div class="url-meta">
+              <span class="url-clicks">${u.clicks} clique${u.clicks !== 1 ? 's' : ''}</span>
+            </div>
+          </div>`
+      }).join('')
+    } catch {
+      list.innerHTML = '<p class="empty">Erro ao carregar URLs.</p>'
+    }
+  }
+
+  async function deletar(slug) {
+    await fetch(`/api/urls/${slug}`, { method: 'DELETE' })
+    document.getElementById(`item-${slug}`)?.remove()
+    const list = document.getElementById('urlList')
+    if (!list.children.length) {
+      list.innerHTML = '<p class="empty">Nenhuma URL encurtada ainda.</p>'
+    }
+  }
+</script>
+</body>
+</html>
