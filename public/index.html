@@ -333,8 +333,11 @@
   <div class="logo">curto<span>.</span></div>
   <div class="nav-right">
     <button class="btn-ghost" onclick="abrirModal()">Minhas URLs</button>
+    <a href="/login.html" class="btn-ghost" id="btnLogin" style="text-decoration:none">Entrar</a>
+    <button class="btn-ghost" id="btnSair" onclick="sair()" style="display:none">Sair</button>
+    <span id="emailUsuario" style="font-size:0.8rem;color:var(--muted);display:none"></span>
     <button class="btn-theme" onclick="alternarTema()" title="Alternar tema">🌙</button>
-  </div>
+</div>
 </nav>
 
 <section class="hero">
@@ -393,6 +396,21 @@
 </div>
 
 <script>
+  // VERIFICAR LOGIN
+  const token = localStorage.getItem('token')
+  const email = localStorage.getItem('email')
+  if (token) {
+      document.getElementById('btnLogin').style.display = 'none'
+      document.getElementById('btnSair').style.display = 'block'
+      document.getElementById('emailUsuario').style.display = 'block'
+      document.getElementById('emailUsuario').textContent = email
+  }
+
+  function sair() {
+      localStorage.removeItem('token')
+      localStorage.removeItem('email')
+      window.location.reload()
+  }
   // TEMA
   const btnTema = document.querySelector('.btn-theme')
   function alternarTema() {
@@ -418,10 +436,14 @@
     resultado.className = 'result'
 
     try {
+      const token = localStorage.getItem('token')
       const res = await fetch('/api/encurtar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: urlFinal })
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          },
+          body: JSON.stringify({ url: urlFinal })
       })
       const data = await res.json()
 
@@ -471,7 +493,12 @@
     const list = document.getElementById('urlList')
     list.innerHTML = '<p class="empty">Carregando...</p>'
     try {
-      const res = await fetch('/api/urls')
+      const token = localStorage.getItem('token')
+      const res = await fetch('/api/urls', {
+          headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+          }
+      })
       const data = await res.json()
       if (!data.length) {
         list.innerHTML = '<p class="empty">Nenhuma URL encurtada ainda.</p>'

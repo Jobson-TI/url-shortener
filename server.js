@@ -37,7 +37,7 @@ initDB()
  })
 
  //o encurtado do site aqui ele transformar o link em curto
- app.post('/api/encurtar', autenticar, async (req, res) => {
+ app.post('/api/encurtar', autenticarOpcional, async (req, res) => {
     const { url } = req.body
     const base = `${req.protocol}://${req.get('host')}`
 
@@ -73,6 +73,18 @@ initDB()
     await pool.query('INSERT INTO usuarios (email, senha) VALUES ($1, $2)', [email, hash])
     res.status(201).json({ mensagem: 'Usuário criado com sucesso'})
 })
+
+//autentiação opcional
+function autenticarOpcional(req, res, next) {
+    const token = req.headers.authorization?.replace('Bearer ', '')
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET)
+            req.usuarioId = decoded.id
+        } catch {}
+    }
+    next()
+}
 
 //verificado de token
  function autenticar(req, res, next) {

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curto — Entrar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
+  <style>
+    :root[data-theme="dark"] {
+      --bg: #0d0d0f;
+      --surface: #18181c;
+      --border: #2a2a30;
+      --text: #f0f0f2;
+      --muted: #7a7a8a;
+      --accent: #7c6dfa;
+      --accent-hover: #6a5ce8;
+      --error: #f87171;
+      --success: #34d399;
+      --hero-from: #1a1040;
+      --hero-to: #0d0d0f;
+    }
+    :root[data-theme="light"] {
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --border: #e0e0e8;
+      --text: #111114;
+      --muted: #777788;
+      --accent: #5b4ef5;
+      --accent-hover: #4a3ee0;
+      --error: #dc2626;
+      --success: #059669;
+      --hero-from: #ede9fe;
+      --hero-to: #f5f5f7;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .logo span { color: var(--text); }
+    .btn-theme {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.2s;
+    }
+    .btn-theme:hover { border-color: var(--accent); }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background: linear-gradient(160deg, var(--hero-from), var(--hero-to));
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .card-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.75rem;
+    }
+
+    /* FIELDS */
+    .field { margin-bottom: 1rem; }
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+    .field-wrap {
+      position: relative;
+    }
+    .field input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.875rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+      padding-right: 2.75rem;
+    }
+    .field input:focus { border-color: var(--accent); }
+    .field input::placeholder { color: var(--muted); }
+
+    .toggle-senha {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      line-height: 1;
+    }
+    .toggle-senha:hover { color: var(--text); }
+
+    /* BOTÃO */
+    .btn-primary {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* TROCAR MODO */
+    .trocar {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .trocar button {
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: 600;
+      padding: 0;
+    }
+    .trocar button:hover { text-decoration: underline; }
+
+    /* FEEDBACK */
+    .feedback {
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .feedback.erro { background: color-mix(in srgb, var(--error) 12%, transparent); border: 1px solid color-mix(in srgb, var(--error) 30%, transparent); color: var(--error); display: block; }
+    .feedback.sucesso { background: color-mix(in srgb, var(--success) 12%, transparent); border: 1px solid color-mix(in srgb, var(--success) 30%, transparent); color: var(--success); display: block; }
+
+    /* DIVISOR GOOGLE (futuro) */
+    .divisor {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+    }
+    .divisor::before, .divisor::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .divisor span {
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .btn-google {
+      width: 100%;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: var(--muted);
+      cursor: not-allowed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 480px) {
+      nav { padding: 1rem; }
+      .card { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">curto<span>.</span></a>
+  <button class="btn-theme" onclick="alternarTema()" title="Alternar tema">🌙</button>
+</nav>
+
+<main>
+  <div class="card">
+    <p class="card-label" id="cardLabel">Acesso</p>
+    <h1 class="card-title" id="cardTitle">Entrar na conta</h1>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="field">
+      <label for="email">E-mail</label>
+      <div class="field-wrap">
+        <input type="email" id="email" placeholder="seu@email.com" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="senha">Senha</label>
+      <div class="field-wrap">
+        <input type="password" id="senha" placeholder="••••••••" />
+        <button class="toggle-senha" onclick="toggleSenha()" id="btnToggle" title="Mostrar senha">👁</button>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btnAcao" onclick="acao()">Entrar</button>
+
+    <div class="divisor"><span>ou</span></div>
+    <button class="btn-google" disabled title="Em breve">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuar com Google — em breve
+    </button>
+
+    <div class="trocar">
+      <span id="trocarTexto">Não tem conta?</span>
+      <button onclick="trocarModo()" id="btnTrocar">Criar conta</button>
+    </div>
+  </div>
+</main>
+
+<script>
+  let modo = 'login' // 'login' ou 'cadastro'
+
+  // TEMA
+  const btnTema = document.querySelector('.btn-theme')
+  function alternarTema() {
+    const html = document.documentElement
+    const atual = html.getAttribute('data-theme')
+    html.setAttribute('data-theme', atual === 'dark' ? 'light' : 'dark')
+    btnTema.textContent = atual === 'dark' ? '☀️' : '🌙'
+  }
+
+  // TOGGLE SENHA
+  function toggleSenha() {
+    const input = document.getElementById('senha')
+    const btn = document.getElementById('btnToggle')
+    if (input.type === 'password') {
+      input.type = 'text'
+      btn.textContent = '🙈'
+    } else {
+      input.type = 'password'
+      btn.textContent = '👁'
+    }
+  }
+
+  // TROCAR MODO
+  function trocarModo() {
+    modo = modo === 'login' ? 'cadastro' : 'login'
+    const isLogin = modo === 'login'
+    document.getElementById('cardLabel').textContent = isLogin ? 'Acesso' : 'Novo por aqui'
+    document.getElementById('cardTitle').textContent = isLogin ? 'Entrar na conta' : 'Criar conta'
+    document.getElementById('btnAcao').textContent = isLogin ? 'Entrar' : 'Criar conta'
+    document.getElementById('trocarTexto').textContent = isLogin ? 'Não tem conta?' : 'Já tem conta?'
+    document.getElementById('btnTrocar').textContent = isLogin ? 'Criar conta' : 'Entrar'
+    document.getElementById('feedback').className = 'feedback'
+  }
+
+  // AÇÃO
+  async function acao() {
+    const email = document.getElementById('email').value.trim()
+    const senha = document.getElementById('senha').value
+    const btn = document.getElementById('btnAcao')
+    const feedback = document.getElementById('feedback')
+
+    if (!email || !senha) {
+      feedback.textContent = 'Preencha e-mail e senha.'
+      feedback.className = 'feedback erro'
+      return
+    }
+
+    btn.disabled = true
+    btn.textContent = modo === 'login' ? 'Entrando...' : 'Criando conta...'
+    feedback.className = 'feedback'
+
+    const rota = modo === 'login' ? '/api/login' : '/api/cadastro'
+
+    try {
+      const res = await fetch(rota, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha })
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        feedback.textContent = data.erro || 'Algo deu errado.'
+        feedback.className = 'feedback erro'
+        return
+      }
+
+      if (modo === 'login') {
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('email', email)
+        window.location.href = '/'
+      } else {
+        feedback.textContent = 'Conta criada! Agora é só entrar.'
+        feedback.className = 'feedback sucesso'
+        setTimeout(() => trocarModo(), 1500)
+      }
+    } catch {
+      feedback.textContent = 'Erro de conexão.'
+      feedback.className = 'feedback erro'
+    } finally {
+      btn.disabled = false
+      btn.textContent = modo === 'login' ? 'Entrar' : 'Criar conta'
+    }
+  }
+
+  // Enter pra confirmar
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') acao()
+  })
+</script>
+</body>
+</html>
