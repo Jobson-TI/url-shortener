@@ -27,7 +27,21 @@ async function initDB() {
  await pool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nome TEXT`)
  await pool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS criadoEm TEXT`)
  await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS criadoem TEXT`)
+ await limparURLsAntigas()
 }
+
+async function limparURLsAntigas() {
+    const result = await pool.query('SELECT * FROM urls')
+    const agora = new Date()
+    result.rows.forEach(async url => {
+        const ultimo = new Date(url.ultimoacesso)
+        const diasSemAcesso = (agora - ultimo) / (1000 * 60 * 60 * 24)
+        if (diasSemAcesso >= 1) {
+            await pool.query('DELETE FROM urls WHERE slug = $1', [url.slug])
+        }
+    })
+}
+
 initDB()
  const { nanoid } = require('nanoid')
 
@@ -143,6 +157,7 @@ function autenticarOpcional(req, res, next) {
  })
 //mostrar todas as urls
  app.get('/api/urls', autenticar, async (req, res) => {
+    await limparURLsAntigas()
     const result = await pool.query('SELECT * FROM urls WHERE usuario_id = $1', [req.usuarioId])
     res.json(result.rows)
 })
@@ -151,18 +166,6 @@ function autenticarOpcional(req, res, next) {
     await pool.query('DELETE FROM urls WHERE slug = $1', [req.params.slug])
     res.json({ mensagem: `URL ${req.params.slug} deletada com sucesso` })
 })
-//temporizado para deletar url depois de um tempo
- setInterval(async () => {
-    const result = await pool.query('SELECT * FROM urls')
-    const agora = new Date()
-    result.rows.forEach(async url => {
-        const ultimo = new Date(url.ultimoAcesso)
-        const diasSemAcesso = (agora - ultimo) / (1000 * 60 * 60 * 24)
-        if (diasSemAcesso >= 1) {
-            await pool.query('DELETE FROM urls WHERE slug = $1', [url.slug])
-        }
-    })
-}, 60000)
 
 //o redirecionador do encurtador para o site real
     app.get('/:slug', async (req, res) => {
