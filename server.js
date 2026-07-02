@@ -26,7 +26,7 @@ async function initDB() {
  await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS usuario_id INTEGER REFERENCES usuarios(id)`)
  await pool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nome TEXT`)
  await pool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS criadoEm TEXT`)
- await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS criadoEm TEXT`)
+ await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS criadoem TEXT`)
 }
 initDB()
  const { nanoid } = require('nanoid')
@@ -55,7 +55,7 @@ initDB()
     }
 
     const slug = nanoid(6)
-    await pool.query('INSERT INTO urls (slug, original, clicks, ultimoAcesso, usuario_id, criadoEm) VALUES ($1, $2, $3, $4, $5, $6)', [slug, url, 0, new Date().toISOString(), req.usuarioId, new Date().toISOString()])
+    await pool.query('INSERT INTO urls (slug, original, clicks, ultimoAcesso, usuario_id, criadoem) VALUES ($1, $2, $3, $4, $5, $6)', [slug, url, 0, new Date().toISOString(), req.usuarioId, new Date().toISOString()])
 
     res.status(201).json({
         slug,
