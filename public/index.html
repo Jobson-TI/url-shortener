@@ -500,7 +500,11 @@
           }
       })
       const data = await res.json()
-      if (!data.length) {
+      if (!token) {
+          list.innerHTML = '<p class="empty">Faça login para ver suas URLs.</p>'
+          return
+      }
+      if (!Array.isArray(data) || !data.length) {
         list.innerHTML = '<p class="empty">Nenhuma URL encurtada ainda.</p>'
         return
       }
