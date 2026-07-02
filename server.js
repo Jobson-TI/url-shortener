@@ -169,7 +169,7 @@ function autenticarOpcional(req, res, next) {
         const result = await pool.query('SELECT * FROM urls WHERE slug = $1', [req.params.slug])
         const url = result.rows[0]
         if (!url) {
-            return res.status(404).json({ erro: 'URL não encontrada' })
+            return res.status(404).sendFile('404.html', { root: 'public' })
         }
         await pool.query('UPDATE urls SET clicks = $1, ultimoAcesso = $2 WHERE slug = $3', [url.clicks + 1, new Date().toISOString(), req.params.slug])
         res.redirect(url.original)
