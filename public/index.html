@@ -532,13 +532,19 @@
 }
 
   async function deletar(slug) {
-    await fetch(`/api/urls/${slug}`, { method: 'DELETE' })
+    const token = localStorage.getItem('token')
+    await fetch(`/api/urls/${slug}`, { 
+        method: 'DELETE',
+        headers: {
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+    })
     document.getElementById(`item-${slug}`)?.remove()
     const list = document.getElementById('urlList')
     if (!list.children.length) {
       list.innerHTML = '<p class="empty">Nenhuma URL encurtada ainda.</p>'
     }
-  }
+}
 </script>
 </body>
 </html>
