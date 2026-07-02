@@ -55,6 +55,7 @@ initDB()
     }
 
     const slug = nanoid(6)
+    console.log('Salvando criadoem:', new Date().toISOString())
     await pool.query('INSERT INTO urls (slug, original, clicks, ultimoAcesso, usuario_id, criadoem) VALUES ($1, $2, $3, $4, $5, $6)', [slug, url, 0, new Date().toISOString(), req.usuarioId, new Date().toISOString()])
 
     res.status(201).json({
