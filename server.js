@@ -54,8 +54,22 @@ initDB()
         return res.status(200).json({ slug: existente.slug, curta: `${base}/${existente.slug}`, original: url })
     }
 
-    const slug = nanoid(6)
-    console.log('Salvando criadoem:', new Date().toISOString())
+    const slugPersonalizado = req.body.slug
+    let slug
+
+    if (slugPersonalizado) {
+        if (slugPersonalizado.length < 3 || slugPersonalizado.length > 20) {
+            return res.status(400).json({ erro: 'Slug deve ter entre 3 e 20 caracteres' })
+        }
+        const jaExiste = await pool.query('SELECT slug FROM urls WHERE slug = $1', [slugPersonalizado])
+        if (jaExiste.rows[0]) {
+            return res.status(400).json({ erro: 'Esse slug já existe, tente outro' })
+        }
+        slug = slugPersonalizado
+    } else {
+        slug = nanoid(6)
+    }
+
     await pool.query('INSERT INTO urls (slug, original, clicks, ultimoAcesso, usuario_id, criadoem) VALUES ($1, $2, $3, $4, $5, $6)', [slug, url, 0, new Date().toISOString(), req.usuarioId, new Date().toISOString()])
 
     res.status(201).json({

@@ -351,6 +351,9 @@
       <input type="url" id="urlInput" placeholder="https://seulink.com/muito/longo/aqui" />
       <button class="btn-primary" id="btnEncurtar" onclick="encurtar()">Encurtar</button>
     </div>
+    <div style="margin-top:0.5rem">
+      <input type="text" id="slugInput" placeholder="Slug personalizado (opcional, 3-20 caracteres)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.85rem;padding:0.5rem 0.75rem;outline:none" />
+    </div>
     <div class="result" id="resultado">
       <span class="result-link" id="resultLink"></span>
       <button class="btn-copy" id="btnCopiar" onclick="copiar()">Copiar</button>
@@ -475,6 +478,7 @@
     const url = input.value.trim()
     if (!url) return
     const urlFinal = url.startsWith('http') ? url : 'https://' + url
+    const slugPersonalizado = document.getElementById('slugInput').value.trim()
 
     btn.disabled = true
     btn.textContent = 'Encurtando...'
@@ -488,7 +492,7 @@
               'Content-Type': 'application/json',
               ...(token ? { 'Authorization': `Bearer ${token}` } : {})
           },
-          body: JSON.stringify({ url: urlFinal })
+          body: JSON.stringify({ url: urlFinal, ...(slugPersonalizado ? { slug: slugPersonalizado } : {}) })
       })
       const data = await res.json()
 
