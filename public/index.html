@@ -565,7 +565,7 @@
       </div>
       <div class="url-original" title="${u.original}">${u.original}</div>
       <div class="url-meta">
-        <span class="url-clicks">${u.clicks} clique${u.clicks !== 1 ? 's' : ''}</span>
+        <span class="url-clicks">${u.clicks} clique${u.clicks !== 1 ? 's' : ''} · criado em ${u.criadoEm ? new Date(u.criadoEm).toLocaleDateString('pt-BR') : 'N/A'}</span>
       </div>
     </div>`
   ).join('')
