@@ -25,6 +25,7 @@ async function initDB() {
  `)
  await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS usuario_id INTEGER REFERENCES usuarios(id)`)
  await pool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nome TEXT`)
+ await pool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS criadoEm TEXT`)
 }
 initDB()
  const { nanoid } = require('nanoid')
@@ -71,7 +72,7 @@ initDB()
     }
 
     const hash = await bcrypt.hash(senha, 10)
-    const resultado = await pool.query('INSERT INTO usuarios (email, senha, nome) VALUES ($1, $2, $3) RETURNING id', [email, hash, nome])
+    const resultado = await pool.query('INSERT INTO usuarios (email, senha, nome, criadoEm) VALUES ($1, $2, $3, $4) RETURNING id', [email, hash, nome, new Date().toISOString()])
     const token = jwt.sign({ id: resultado.rows[0].id }, JWT_SECRET, { expiresIn: '7d' })
     res.status(201).json({ token, nome })
 })
