@@ -354,6 +354,7 @@
     <div class="result" id="resultado">
       <span class="result-link" id="resultLink"></span>
       <button class="btn-copy" id="btnCopiar" onclick="copiar()">Copiar</button>
+      <button class="btn-copy" id="btnQR" onclick="abrirQRResult()">QR</button>
     </div>
   </div>
 </section>
@@ -409,8 +410,14 @@
 </div>
 
 <script>
+  function abrirQRResult() {
+    const url = document.getElementById('resultLink').dataset.url
+    abrirQR(url)
+}
+
   let qrInstance = null
   function abrirQR(url) {
+      fecharModal()
       document.getElementById('overlayQR').classList.add('open')
       document.getElementById('qrUrl').textContent = url
       const container = document.getElementById('qrcode')
