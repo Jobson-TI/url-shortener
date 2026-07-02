@@ -351,9 +351,9 @@
       <input type="url" id="urlInput" placeholder="https://seulink.com/muito/longo/aqui" />
       <button class="btn-primary" id="btnEncurtar" onclick="encurtar()">Encurtar</button>
     </div>
-    <div style="margin-top:0.5rem">
-      <input type="text" id="slugInput" placeholder="Slug personalizado (opcional)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.85rem;padding:0.5rem 0.75rem;outline:none" />
-      <span style="font-size:0.8rem;color:var(--muted);margin-top:0.4rem;display:inline-block;cursor:help;position:relative" title="Deixe em branco para gerar automaticamente. Se personalizar, use entre 3 e 20 caracteres — sem espaços.">❓</span>
+    <div style="margin-top:0.5rem;display:flex;align-items:center;gap:0.5rem">
+      <input type="text" id="slugInput" placeholder="Slug personalizado (opcional)" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:0.85rem;padding:0.5rem 0.75rem;outline:none" />
+      <span style="font-size:1rem;color:var(--muted);cursor:help;flex-shrink:0" title="Deixe em branco para gerar automaticamente. Se personalizar, use entre 3 e 20 caracteres — sem espaços.">❓</span>
     </div>
     <div class="result" id="resultado">
       <span class="result-link" id="resultLink"></span>
