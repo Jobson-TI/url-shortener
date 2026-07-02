@@ -373,10 +373,10 @@
         localStorage.setItem('nome', data.nome)
         window.location.href = '/'
       } else {
-        feedback.textContent = 'Conta criada! Agora é só entrar.'
-        feedback.className = 'feedback sucesso'
-        setTimeout(() => trocarModo(), 1500)
-      }
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('nome', data.nome)
+        window.location.href = '/'
+    }
     } catch {
       feedback.textContent = 'Erro de conexão.'
       feedback.className = 'feedback erro'

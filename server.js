@@ -71,8 +71,9 @@ initDB()
     }
 
     const hash = await bcrypt.hash(senha, 10)
-    await pool.query('INSERT INTO usuarios (email, senha, nome) VALUES ($1, $2, $3)', [email, hash, nome])
-    res.status(201).json({ mensagem: 'Usuário criado com sucesso'})
+    const resultado = await pool.query('INSERT INTO usuarios (email, senha, nome) VALUES ($1, $2, $3) RETURNING id', [email, hash, nome])
+    const token = jwt.sign({ id: resultado.rows[0].id }, JWT_SECRET, { expiresIn: '7d' })
+    res.status(201).json({ token, nome })
 })
 
 //autentiação opcional
