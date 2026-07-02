@@ -24,6 +24,7 @@ async function initDB() {
     )
  `)
  await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS usuario_id INTEGER REFERENCES usuarios(id)`)
+ await pool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nome TEXT`)
 }
 initDB()
  const { nanoid } = require('nanoid')
@@ -63,14 +64,14 @@ initDB()
 
 //cadastro
  app.post('/api/cadastro', async (req, res) => {
-    const { email, senha } = req.body
+    const { email, senha, nome } = req.body
 
-    if (!email || !senha) {
-        return res.status(400).json({ erro: 'Email e senha obrigatórios'})
+    if (!email || !senha || !nome) {
+        return res.status(400).json({ erro: 'Nome, email e senha obrigatórios'})
     }
 
     const hash = await bcrypt.hash(senha, 10)
-    await pool.query('INSERT INTO usuarios (email, senha) VALUES ($1, $2)', [email, hash])
+    await pool.query('INSERT INTO usuarios (email, senha, nome) VALUES ($1, $2, $3)', [email, hash, nome])
     res.status(201).json({ mensagem: 'Usuário criado com sucesso'})
 })
 
@@ -120,7 +121,7 @@ function autenticarOpcional(req, res, next) {
     }
 
     const token = jwt.sign({ id: usuario.id }, JWT_SECRET, {expiresIn: '7d'})
-    res.json({ token })
+    res.json({ token, nome: usuario.nome })
  })
 //mostrar todas as urls
  app.get('/api/urls', autenticar, async (req, res) => {

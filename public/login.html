@@ -260,6 +260,13 @@
 
     <div class="feedback" id="feedback"></div>
 
+    <div class="field" id="campoNome" style="display:none">
+      <label for="nome">Nome</label>
+      <div class="field-wrap">
+        <input type="text" id="nome" placeholder="Seu nome" />
+      </div>
+    </div>
+
     <div class="field">
       <label for="email">E-mail</label>
       <div class="field-wrap">
@@ -319,6 +326,7 @@
   function trocarModo() {
     modo = modo === 'login' ? 'cadastro' : 'login'
     const isLogin = modo === 'login'
+    document.getElementById('campoNome').style.display = isLogin ? 'none' : 'block'
     document.getElementById('cardLabel').textContent = isLogin ? 'Acesso' : 'Novo por aqui'
     document.getElementById('cardTitle').textContent = isLogin ? 'Entrar na conta' : 'Criar conta'
     document.getElementById('btnAcao').textContent = isLogin ? 'Entrar' : 'Criar conta'
@@ -350,7 +358,7 @@
       const res = await fetch(rota, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha })
+        body: JSON.stringify({ email, senha, ...(modo === 'cadastro' ? { nome: document.getElementById('nome').value.trim() } : {}) })
       })
       const data = await res.json()
 
@@ -362,7 +370,7 @@
 
       if (modo === 'login') {
         localStorage.setItem('token', data.token)
-        localStorage.setItem('email', email)
+        localStorage.setItem('nome', data.nome)
         window.location.href = '/'
       } else {
         feedback.textContent = 'Conta criada! Agora é só entrar.'
