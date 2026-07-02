@@ -403,12 +403,14 @@
       document.getElementById('btnLogin').style.display = 'none'
       document.getElementById('btnSair').style.display = 'block'
       document.getElementById('emailUsuario').style.display = 'block'
-      document.getElementById('emailUsuario').textContent = email
+      const nome = localStorage.getItem('nome')
+      document.getElementById('emailUsuario').textContent = nome || email
   }
 
   function sair() {
       localStorage.removeItem('token')
       localStorage.removeItem('email')
+      localStorage.removeItem('nome')
       window.location.reload()
   }
   // TEMA
