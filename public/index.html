@@ -6,6 +6,7 @@
   <title>Curto — Encurtador de URLs</title>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root[data-theme="dark"] {
       --bg: #0d0d0f;
@@ -384,6 +385,18 @@
   </div>
 </section>
 
+<!-- MODAL QR CODE -->
+<div class="overlay" id="overlayQR" onclick="fecharQR(event)">
+  <div class="modal" style="max-width:320px;text-align:center">
+    <div class="modal-header">
+      <h2>QR Code</h2>
+      <button class="btn-close" onclick="fecharQRBtn()">✕</button>
+    </div>
+    <div id="qrcode" style="display:flex;justify-content:center;margin:1rem 0"></div>
+    <p id="qrUrl" style="font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--muted);word-break:break-all"></p>
+  </div>
+</div>
+
 <!-- MODAL -->
 <div class="overlay" id="overlay" onclick="fecharModalFora(event)">
   <div class="modal">
@@ -396,6 +409,29 @@
 </div>
 
 <script>
+  let qrInstance = null
+  function abrirQR(url) {
+      document.getElementById('overlayQR').classList.add('open')
+      document.getElementById('qrUrl').textContent = url
+      const container = document.getElementById('qrcode')
+      container.innerHTML = ''
+      qrInstance = new QRCode(container, {
+          text: url,
+          width: 200,
+          height: 200,
+          colorDark: '#7c6dfa',
+          colorLight: '#18181c'
+      })
+  }
+
+  function fecharQRBtn() {
+      document.getElementById('overlayQR').classList.remove('open')
+  }
+
+  function fecharQR(e) {
+      if (e.target === document.getElementById('overlayQR')) fecharQRBtn()
+  }
+
   // VERIFICAR LOGIN
   const token = localStorage.getItem('token')
   const email = localStorage.getItem('email')
@@ -516,6 +552,7 @@
         <span class="url-slug">${window.location.origin}/${u.slug}</span>
         <div style="display:flex;gap:0.5rem">
           <button class="btn-copy" style="font-size:0.75rem;padding:0.25rem 0.6rem" onclick="copiarModal('${window.location.origin}/${u.slug}', this)">Copiar</button>
+          <button class="btn-copy" style="font-size:0.75rem;padding:0.25rem 0.6rem" onclick="abrirQR('${window.location.origin}/${u.slug}')">QR</button>
           <button class="btn-del" onclick="deletar('${u.slug}')">Deletar</button>
         </div>
       </div>
