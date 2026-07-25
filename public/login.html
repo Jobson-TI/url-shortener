@@ -296,8 +296,13 @@
     </div>
   </div>
 </main>
+<footer style="text-align:center;padding:1.5rem;font-size:0.8rem;color:var(--muted);border-top:1px solid var(--border)">
+  ©<span id="ano"></span>ThreeGiga. Todos os direitos reservados.
+</footer>
 
 <script>
+  document.getElementById('ano').textContent = new Date().getFullYear()
+
   let modo = 'login' // 'login' ou 'cadastro'
 
   // TEMA
