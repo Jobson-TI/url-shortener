@@ -351,10 +351,10 @@
       <input type="url" id="urlInput" placeholder="https://seulink.com/muito/longo/aqui" />
       <button class="btn-primary" id="btnEncurtar" onclick="encurtar()">Encurtar</button>
     </div>
-    <div style="margin-top:0.5rem;display:flex;gap:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0 0.75rem;align-items:center">
-      <input type="text" id="slugInput" placeholder="Slug personalizado (opcional)" style="flex:1;background:none;border:none;color:var(--text);font-family:inherit;font-size:0.85rem;padding:0.5rem 0;outline:none" />
-      <span style="font-size:1rem;color:var(--muted);cursor:help;flex-shrink:0" title="Deixe em branco para gerar automaticamente. Se personalizar, use entre 3 e 20 caracteres — sem espaços.">❓</span>
-    </div>
+    <div style="margin-top:0.5rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0 0.75rem;">
+  <input type="text" id="slugInput" placeholder="Slug personalizado (opcional)" style="width:100%;background:none;border:none;color:var(--text);font-family:inherit;font-size:0.85rem;padding:0.5rem 0;outline:none" />
+</div>
+<p style="font-size:0.75rem;color:var(--muted);margin-top:0.4rem;text-align:left">Deixe em branco para gerar automaticamente. Use entre 3 e 20 caracteres, sem espaços.</p>
     <div class="result" id="resultado">
       <span class="result-link" id="resultLink"></span>
       <button class="btn-copy" id="btnCopiar" onclick="copiar()">Copiar</button>
@@ -412,6 +412,7 @@
     <div class="url-list" id="urlList"></div>
   </div>
 </div>
+<!-- Footer de copyright --> 
 <footer style="text-align:center;padding:2rem;font-size:0.75rem;color:var(--muted);border-top:1px solid var(--border);font-family:'Space Mono',monospace;letter-spacing:0.05em;background:var(--surface)">
   © <span id="ano"></span> ThreeGiga. Todos os direitos reservados.
 </footer>
