@@ -1,45 +1,63 @@
+require('dotenv').config()
 const express = require('express')//importado o express que foi instalador
-const { Pool } = require('pg')//importado o banco de dados
-const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
+const path = require('path')
+const { DatabaseSync } = require('node:sqlite')//banco embutido no Node, sem precisar compilar nada
 const jwt = require('jsonwebtoken')//token de acesso importado
-const JWT_SECRET = process.env.JWT_SECRET || 'chave-secreta-local' 
-const bcrypt = require('bcrypt')
+const JWT_SECRET = process.env.JWT_SECRET || 'chave-secreta-local'
+const bcrypt = require('bcryptjs')
 
-async function initDB() {
+const db = new DatabaseSync(path.join(__dirname, 'database.sqlite'))
+
+// pequenos helpers pra não ficar repetindo db.prepare(...) toda hora
+function run(sql, params = []) { return db.prepare(sql).run(...params) }
+function get(sql, params = []) { return db.prepare(sql).get(...params) }
+function all(sql, params = []) { return db.prepare(sql).all(...params) }
+
+// SQLite não tem "ALTER TABLE ... ADD COLUMN IF NOT EXISTS" como o Postgres,
+// então checamos manualmente se a coluna já existe antes de adicionar.
+function addColumnIfNotExists(table, column, definition) {
+  const columns = all(`PRAGMA table_info(${table})`)
+  const existe = columns.some((c) => c.name === column)
+  if (!existe) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+  }
+}
+
+function initDB() {
   //tabela do encurtador
-  await pool.query(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS urls (
       slug TEXT PRIMARY KEY,
       original TEXT NOT NULL,
       clicks INTEGER DEFAULT 0,
-      ultimoAcesso TEXT
+      ultimoacesso TEXT
     )
   `)
   //tabela de usuario
-  await pool.query(`
+  db.exec(`
     CREATE TABLE IF NOT EXISTS usuarios (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        senha TEXT NOT NULL
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      senha TEXT NOT NULL
     )
- `)
- await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS usuario_id INTEGER REFERENCES usuarios(id)`)
- await pool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS nome TEXT`)
- await pool.query(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS criadoEm TEXT`)
- await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS criadoem TEXT`)
- await limparURLsAntigas()
+  `)
+  addColumnIfNotExists('urls', 'usuario_id', 'INTEGER REFERENCES usuarios(id)')
+  addColumnIfNotExists('usuarios', 'nome', 'TEXT')
+  addColumnIfNotExists('usuarios', 'criadoem', 'TEXT')
+  addColumnIfNotExists('urls', 'criadoem', 'TEXT')
+  limparURLsAntigas()
 }
 
-async function limparURLsAntigas() {
-    const result = await pool.query('SELECT * FROM urls')
-    const agora = new Date()
-    result.rows.forEach(async url => {
-        const ultimo = new Date(url.ultimoacesso)
-        const diasSemAcesso = (agora - ultimo) / (1000 * 60 * 60 * 24)
-        if (diasSemAcesso >= 1) {
-            await pool.query('DELETE FROM urls WHERE slug = $1', [url.slug])
-        }
-    })
+function limparURLsAntigas() {
+  const urls = all('SELECT * FROM urls')
+  const agora = new Date()
+  urls.forEach((url) => {
+    const ultimo = new Date(url.ultimoacesso)
+    const diasSemAcesso = (agora - ultimo) / (1000 * 60 * 60 * 24)
+    if (diasSemAcesso >= 1) {
+      run('DELETE FROM urls WHERE slug = ?', [url.slug])
+    }
+  })
 }
 
 initDB()
@@ -62,8 +80,7 @@ initDB()
         return res.status(400).json({ erro: 'URL é obrigatória' })
     }
 
-    const result = await pool.query('SELECT * FROM urls WHERE original = $1', [url])
-    const existente = result.rows[0]
+    const existente = get('SELECT * FROM urls WHERE original = ?', [url])
     if (existente) {
         return res.status(200).json({ slug: existente.slug, curta: `${base}/${existente.slug}`, original: url })
     }
@@ -75,8 +92,8 @@ initDB()
         if (slugPersonalizado.length < 3 || slugPersonalizado.length > 20) {
             return res.status(400).json({ erro: 'Slug deve ter entre 3 e 20 caracteres' })
         }
-        const jaExiste = await pool.query('SELECT slug FROM urls WHERE slug = $1', [slugPersonalizado])
-        if (jaExiste.rows[0]) {
+        const jaExiste = get('SELECT slug FROM urls WHERE slug = ?', [slugPersonalizado])
+        if (jaExiste) {
             return res.status(400).json({ erro: 'Esse slug já existe, tente outro' })
         }
         slug = slugPersonalizado
@@ -84,7 +101,10 @@ initDB()
         slug = nanoid(6)
     }
 
-    await pool.query('INSERT INTO urls (slug, original, clicks, ultimoAcesso, usuario_id, criadoem) VALUES ($1, $2, $3, $4, $5, $6)', [slug, url, 0, new Date().toISOString(), req.usuarioId, new Date().toISOString()])
+    run(
+        'INSERT INTO urls (slug, original, clicks, ultimoacesso, usuario_id, criadoem) VALUES (?, ?, ?, ?, ?, ?)',
+        [slug, url, 0, new Date().toISOString(), req.usuarioId || null, new Date().toISOString()]
+    )
 
     res.status(201).json({
         slug,
@@ -102,8 +122,11 @@ initDB()
     }
 
     const hash = await bcrypt.hash(senha, 10)
-    const resultado = await pool.query('INSERT INTO usuarios (email, senha, nome, criadoEm) VALUES ($1, $2, $3, $4) RETURNING id', [email, hash, nome, new Date().toISOString()])
-    const token = jwt.sign({ id: resultado.rows[0].id }, JWT_SECRET, { expiresIn: '7d' })
+    const resultado = run(
+        'INSERT INTO usuarios (email, senha, nome, criadoem) VALUES (?, ?, ?, ?)',
+        [email, hash, nome, new Date().toISOString()]
+    )
+    const token = jwt.sign({ id: Number(resultado.lastInsertRowid) }, JWT_SECRET, { expiresIn: '7d' })
     res.status(201).json({ token, nome })
 })
 
@@ -139,8 +162,7 @@ function autenticarOpcional(req, res, next) {
 //login
  app.post('/api/login', async (req, res) => {
     const { email, senha } = req.body
-    const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email])
-    const usuario = result.rows[0]
+    const usuario = get('SELECT * FROM usuarios WHERE email = ?', [email])
 
     if (!usuario) {
         return res.status(400).json({ erro: 'Email não cadastrado'})
@@ -157,24 +179,23 @@ function autenticarOpcional(req, res, next) {
  })
 //mostrar todas as urls
  app.get('/api/urls', autenticar, async (req, res) => {
-    await limparURLsAntigas()
-    const result = await pool.query('SELECT * FROM urls WHERE usuario_id = $1', [req.usuarioId])
-    res.json(result.rows)
+    limparURLsAntigas()
+    const urls = all('SELECT * FROM urls WHERE usuario_id = ?', [req.usuarioId])
+    res.json(urls)
 })
 //deletar as urls
  app.delete('/api/urls/:slug', autenticar, async (req, res) => {
-    await pool.query('DELETE FROM urls WHERE slug = $1', [req.params.slug])
+    run('DELETE FROM urls WHERE slug = ?', [req.params.slug])
     res.json({ mensagem: `URL ${req.params.slug} deletada com sucesso` })
 })
 
 //o redirecionador do encurtador para o site real
     app.get('/:slug', async (req, res) => {
-        const result = await pool.query('SELECT * FROM urls WHERE slug = $1', [req.params.slug])
-        const url = result.rows[0]
+        const url = get('SELECT * FROM urls WHERE slug = ?', [req.params.slug])
         if (!url) {
             return res.status(404).sendFile('404.html', { root: 'public' })
         }
-        await pool.query('UPDATE urls SET clicks = $1, ultimoAcesso = $2 WHERE slug = $3', [url.clicks + 1, new Date().toISOString(), req.params.slug])
+        run('UPDATE urls SET clicks = ?, ultimoacesso = ? WHERE slug = ?', [url.clicks + 1, new Date().toISOString(), req.params.slug])
         res.redirect(url.original)
     })
 
